@@ -1,0 +1,255 @@
+class User:
+    def __init__(self, name, email, password, role):
+        self.name = name
+        self.email = email
+        self.password = password
+        self.role = role
+
+    def __str__(self):
+        return f"Name: {self.name}, Email: {self.email}, Role: {self.role}"
+
+
+class Job:
+    def __init__(self, title, description, department, location, employment_type, salary_range, deadline,
+                 required_qualifications, preferred_qualifications, status):
+        self.title = title
+        self.description = description
+        self.department = department
+        self.location = location
+        self.employment_type = employment_type
+        self.salary_range = salary_range
+        self.deadline = deadline
+        self.required_qualifications = required_qualifications
+        self.preferred_qualifications = preferred_qualifications
+        self.status = status
+        self.applications = []
+
+    def __str__(self):
+        return (f"Title: {self.title}\nDescription: {self.description}\nDepartment: {self.department}\n"
+                f"Location: {self.location}\nEmployment Type: {self.employment_type}\n"
+                f"Salary Range: {self.salary_range}\nApplication Deadline: {self.deadline}\n"
+                f"Required Qualifications: {self.required_qualifications}\n"
+                f"Preferred Qualifications: {self.preferred_qualifications}\nStatus: {self.status}")
+
+
+class Application:
+    def __init__(self, candidate, resume, status="Pending"):
+        self.candidate = candidate
+        self.resume = resume
+        self.status = status
+
+    def __str__(self):
+        return f"Candidate: {self.candidate.name}, Resume: {self.resume}, Status: {self.status}"
+
+
+class SmartRecruitingPlatform:
+    def __init__(self):
+        self.users = []
+        self.jobs = []
+        self.logged_in_user = None
+
+    def main_menu(self):
+        while True:
+            print("\nMain Menu:")
+            print("1. User Management")
+            print("2. Job Posting and Management")
+            print("3. View Jobs")
+            print("4. Apply for Jobs")
+            print("5. Exit")
+
+            choice = input("Please select an option: ")
+
+            if choice == '1':
+                self.user_management()
+            elif choice == '2':
+                if self.logged_in_user and self.logged_in_user.role in ["HR Manager", "Recruiter"]:
+                    self.job_posting_management()
+                else:
+                    print("Access Denied. Only HR Managers and Recruiters can access this feature.")
+            elif choice == '3':
+                self.view_jobs()
+            elif choice == '4':
+                if self.logged_in_user and self.logged_in_user.role == "Candidate":
+                    self.apply_for_jobs()
+                else:
+                    print("Access Denied. Only Candidates can apply for jobs.")
+            elif choice == '5':
+                print("Exiting the system. Goodbye!")
+                break
+            else:
+                print("Invalid choice. Please try again.")
+
+    def user_management(self):
+        print("\nUser Management:")
+        print("1. Login")
+        print("2. Sign Up")
+        print("3. View Users (Admin Only)")
+        print("4. Admin Dashboard")
+
+        choice = input("Please select an option: ")
+
+        if choice == '1':
+            self.login()
+        elif choice == '2':
+            self.sign_up()
+        elif choice == '3':
+            if self.logged_in_user and self.logged_in_user.role == "Admin":
+                self.view_users()
+            else:
+                print("Access Denied. Only Admins can view users.")
+        elif choice == '4':
+            if self.logged_in_user and self.logged_in_user.role == "Admin":
+                self.admin_dashboard()
+            else:
+                print("Access Denied. Only Admins can access the dashboard.")
+        else:
+            print("Invalid choice. Please try again.")
+
+    def login(self):
+        email = input("Enter your email: ")
+        password = input("Enter your password: ")
+
+        for user in self.users:
+            if user.email == email and user.password == password:
+                self.logged_in_user = user
+                print(f"Login successful! Welcome, {user.name}.")
+                return
+
+        print("Invalid email or password. Please try again.")
+
+    def sign_up(self):
+        name = input("Enter your full name: ")
+        email = input("Enter your email: ")
+        password = input("Enter your password: ")
+        role = input("Enter your role (Admin/HR Manager/Recruiter/Candidate): ")
+
+        if role not in ["Admin", "HR Manager", "Recruiter", "Candidate"]:
+            print("Invalid role. Please select from Admin, HR Manager, Recruiter, or Candidate.")
+            return
+
+        new_user = User(name, email, password, role)
+        self.users.append(new_user)
+        print("Sign Up successful! You can now log in.")
+
+    def view_users(self):
+        print("\nRegistered Users:")
+        for user in self.users:
+            print(user)
+
+    def admin_dashboard(self):
+        print("\nAdmin Dashboard:")
+        print("1. View All Users")
+        print("2. View All Jobs")
+        print("3. View All Applications")
+        print("4. Exit to Main Menu")
+
+        choice = input("Please select an option: ")
+
+        if choice == '1':
+            self.view_users()
+        elif choice == '2':
+            self.view_jobs(admin_view=True)
+        elif choice == '3':
+            self.view_all_applications()
+        elif choice == '4':
+            return
+        else:
+            print("Invalid choice. Please try again.")
+
+    def job_posting_management(self):
+        print("\nJob Posting and Management:")
+        print("1. Create Job")
+        print("2. View Jobs")
+        print("3. Edit/Update Job")
+
+        choice = input("Please select an option: ")
+
+        if choice == '1':
+            self.create_job()
+        elif choice == '2':
+            self.view_jobs()
+        elif choice == '3':
+            self.edit_job()
+        else:
+            print("Invalid choice. Please try again.")
+
+    def create_job(self):
+        title = input("Enter the Job Title: ")
+        description = input("Enter the Job Description: ")
+        department = input("Enter the Department: ")
+        location = input("Enter the Job Location: ")
+        employment_type = input("Enter the Employment Type (Full-time/Part-time/Contract/Internship): ")
+        salary_range = input("Enter the Salary Range (e.g., 50000-80000): ")
+        deadline = input("Enter the Application Deadline (YYYY-MM-DD): ")
+        required_qualifications = input("Enter Required Qualifications: ")
+        preferred_qualifications = input("Enter Preferred Qualifications: ")
+
+        print("\n1. Save as Draft")
+        print("2. Publish")
+
+        status_choice = input("Please select an option: ")
+        status = "Draft" if status_choice == '1' else "Published"
+
+        new_job = Job(title, description, department, location, employment_type, salary_range, deadline,
+                      required_qualifications, preferred_qualifications, status)
+        self.jobs.append(new_job)
+
+        print(f"Job {status.lower()} successfully!")
+
+    def view_jobs(self, admin_view=False):
+        print("\nJob Listings:")
+        for job in self.jobs:
+            if job.status == "Published" or admin_view:
+                print(job)
+                print("Applications:")
+                for application in job.applications:
+                    print(application)
+                print("------------------------------")
+
+    def edit_job(self):
+        print("\nEdit Job:")
+        title = input("Enter the Job Title to edit: ")
+
+        for job in self.jobs:
+            if job.title == title:
+                print(f"Editing Job: {title}")
+                job.description = input("Enter new Job Description: ")
+                job.department = input("Enter new Department: ")
+                job.location = input("Enter new Job Location: ")
+                job.employment_type = input("Enter new Employment Type: ")
+                job.salary_range = input("Enter new Salary Range: ")
+                job.deadline = input("Enter new Application Deadline: ")
+                job.required_qualifications = input("Enter new Required Qualifications: ")
+                job.preferred_qualifications = input("Enter new Preferred Qualifications: ")
+                job.status = input("Enter new Status (Draft/Published): ")
+
+                print("Job updated successfully!")
+                return
+
+        print("Job not found.")
+
+    def apply_for_jobs(self):
+        print("\nApply for Jobs:")
+        for index, job in enumerate(self.jobs):
+            if job.status == "Published":
+                print(f"{index + 1}. {job.title} in {job.department}")
+
+        job_index = int(input("Select a job to apply for by number: ")) - 1
+        if 0 <= job_index < len(self.jobs) and self.jobs[job_index].status == "Published":
+            resume = input("Enter your resume details: ")
+            application = Application(self.logged_in_user, resume)
+            self.jobs[job_index].applications.append(application)
+            print("Application submitted successfully!")
+        else:
+            print("Invalid job selection or job is not published.")
+
+    def view_all_applications(self):
+        print("\nAll Applications:")
+        for job in self.jobs:
+            for application in job.applications:
+                print(f"Job: {job.title}, {application}")
+
+
+if __name__ == "__main__":
+    platform = SmartRecruitingPlatform()
+    platform.main_menu()
